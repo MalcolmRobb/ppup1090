@@ -558,6 +558,10 @@ void decodeModesMessage(struct modesMessage *mm, unsigned char *msg) {
 void useModesMessage(struct modesMessage *mm) {
     if (mm->crcok) { // not checking, ok or fixed
 
+        if (mm->msgtype < 33) {
+          Modes.nDF[mm->msgtype]++;
+        }
+
         // Always track aircraft
         interactiveReceiveData(mm);
     }

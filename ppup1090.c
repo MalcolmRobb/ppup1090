@@ -1,6 +1,6 @@
 // ppup1090, a Mode S PlanePlotter Uploader for dump1090 devices.
 //
-// Copyright (C) 2013 by Malcolm Robb <Support@ATTAvionics.com>
+// Copyright (C) 2013-2021 by Malcolm Robb <Support@ATTAvionics.com>
 //
 // All rights reserved.
 //
@@ -55,6 +55,9 @@ void ppup1090InitConfig(void) {
     Modes.interactive_display_ttl = MODES_INTERACTIVE_DISPLAY_TTL;
     Modes.fUserLat                = MODES_USER_LATITUDE_DFLT;
     Modes.fUserLon                = MODES_USER_LONGITUDE_DFLT;
+
+    // Default Mode A/C handling to on
+    Modes.mode_ac                 = 1;
 
     if ((iErr = openCOAA()))
     {
@@ -320,6 +323,11 @@ int setupConnection(void) {
     // Try to connect to the selected ip address and port. We only support *ONE* input connection which we initiate.here.
     fd = anetTcpConnect(Modes.aneterr, ppup1090.net_input_beast_ipaddr, Modes.net_input_beast_port);
     if (fd != ANET_ERR) {
+        if (Modes.mode_ac) {
+            send(fd, "\0321J", 3, 0);
+        } else {
+            send(fd, "\0321j", 3, 0);
+        }
 		//anetNonBlock(Modes.aneterr, fd);
     }
     return (fd);
@@ -333,6 +341,7 @@ void showHelp(void) {
 "|    ppup1090 RPi Uploader for COAA Planeplotter         Ver : "MODES_PPUP1090_VERSION " |\n"
 "-----------------------------------------------------------------------------\n"
   "--modeac                 Enable decoding of SSR Modes 3/A & 3/C\n"
+  "--nomodeac               Disable decoding of SSR Modes 3/A & 3/C\n"
   "--net-bo-ipaddr <IPv4>   TCP Beast output listen IPv4 (default: 127.0.0.1)\n"
   "--net-bo-port <port>     TCP Beast output listen port (default: 30005)\n"
   "--net-pp-ipaddr <IPv4>   Plane Plotter LAN IPv4 Address (default: 0.0.0.0)\n"
@@ -352,6 +361,7 @@ void showCopyright(void) {
 "\n"
 " Copyright (C) 2012 by Salvatore Sanfilippo <antirez@gmail.com>\n"
 " Copyright (C) 2014 by Malcolm Robb <support@attavionics.com>\n"
+" Copyright (C) 2021 by Malcolm Robb <support@attavionics.com>\n"
 "\n"
 " All rights reserved.\n"
 "\n"
@@ -393,6 +403,8 @@ int main(int argc, char **argv) {
 
         if        (!strcmp(argv[j],"--modeac")) {
             Modes.mode_ac = 1;
+        } else if (!strcmp(argv[j],"--nomodeac")) {
+            Modes.mode_ac = 0;
         } else if (!strcmp(argv[j],"--net-bo-port") && more) {
             Modes.net_input_beast_port = atoi(argv[++j]);
         } else if (!strcmp(argv[j],"--net-bo-ipaddr") && more) {

@@ -37,7 +37,7 @@
 // MinorVer changes when additional features are added, but not for bug fixes (range 00-99)
 // DayDate & Year changes for all changes, including for bug fixes. It represent the release date of the update
 //
-#define MODES_PPUP1090_VERSION     "1.11.0601.21"
+#define MODES_PPUP1090_VERSION     "1.12.0502.21"
 
 // ============================= Include files ==========================
 
@@ -60,7 +60,6 @@
     #include <ctype.h>
     #include <sys/stat.h>
     #include <sys/ioctl.h>
-    #include "rtl-sdr.h"
     #include "anet.h"
     #include <netdb.h>
 #else
@@ -217,6 +216,8 @@ struct {                             // Internal state
     struct aircraft *aircrafts;
     uint64_t         interactive_last_update; // Last screen update in milliseconds
     time_t           last_cleanup_time;       // Last cleanup time in seconds
+
+    uint32_t nDF[33];                         // Counts of various DF Frame types
 
     // DF List mode
     pthread_mutex_t pDF_mutex;        // Mutex to synchronize pDF access
